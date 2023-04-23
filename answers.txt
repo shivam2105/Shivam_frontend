@@ -1,0 +1,103 @@
+Question1) Explain what the simple List component does.
+
+The List component is a React component that renders a list of items provided through the items prop.
+Each item is rendered using the SingleListItem component which receives the following props: isSelected, index, onClickHandler, and text.
+1. It receives an array of objects called 'items' as props and renders a SingleListItem component for each item in the array.
+2. Each SingleListItem component is passed a set of props, including an 'onClickHandler' function, a 'text' string, the current index,
+   and a 'isSelected' boolean prop that determines the background color.
+3. The 'onClickHandler' function handles click events and updates the 'selectedIndex' hook with the current index.
+4. The 'isSelected' prop of each SingleListItem is set to true if its index matches the selected item index in the state.
+5. If 'isSelected' is true, the list item will have a green background. Otherwise, it will have a red background.
+
+
+Question2) What problems/warnings are there with the code?
+
+1-> In WrappedSingleListItem, the onClick event is not being passed correctly. It should be onClick={() => onClickHandler(index)}
+ instead of onClick={onClickHandler(index)}. To pass a parameter in a function in the 'onClick' event the attribute should be
+ returned by an arrow function.
+2-> The onClickHandler prop passed to the SingleListItem component is not used correctly.
+    It should be defined as (index) => () => handleClick(index).
+3->'array' should be written as 'arrayOf' and 'shapeOf' should be written as shape.
+4-> isSelected prop is not passed as a boolean value.
+
+Question3) Please fix, optimize, and/or modify the component as much as you think is necessary.
+
+// This is the fixed code
+import React, { useState, useEffect, memo } from 'react';
+import PropTypes from 'prop-types';
+
+// Single List Item
+const WrappedSingleListItem = ({
+  index,
+  isSelected,
+  onClickHandler,
+  text,
+}) => {
+  return (
+    <li style={{ backgroundColor: isSelected ? "green" : "red" }}
+     onClick={() =>onClickHandler(index)}>
+      {text}
+</li>
+  );
+};
+
+WrappedSingleListItem.propTypes = {
+  index: PropTypes.number,
+  isSelected: PropTypes.bool,
+  onClickHandler: PropTypes.func.isRequired,
+  text: PropTypes.string.isRequired,
+};
+
+const SingleListItem = memo(WrappedSingleListItem);
+
+// List Component
+const WrappedListComponent = ({
+  items,
+}) => {
+  const [selectedIndex, setSelectedIndex] = useState();
+
+  useEffect(() => {
+    setSelectedIndex(null);
+  }, [items]);
+
+
+  const handleClick = index => {
+    setSelectedIndex(index);
+  };
+
+  return (
+    <ul style={{ textAlign: 'left' }}>
+      {items.map((item, index) => (
+        <SingleListItem
+          key={index}
+          onClickHandler={() => handleClick(index)}
+          text={item.text}
+          index={index}
+          isSelected={selectedIndex === index}
+        />
+      ))}
+    </ul>
+  );
+};
+
+WrappedListComponent.propTypes = {
+  items: PropTypes.arrayOf(
+    PropTypes.shape({
+      text: PropTypes.string.isRequired,
+    }),
+  ),
+};
+
+WrappedListComponent.defaultProps = {
+  items: [
+    { text: 'Answer'},
+    { text: 'to'},
+    { text: 'Question'},
+    { text: 'Number'},
+    { text: 'Three'},
+  ],
+};
+
+const List = memo(WrappedListComponent);
+
+export default List;
